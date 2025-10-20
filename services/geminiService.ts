@@ -11,10 +11,6 @@ const getSystemInstruction = (type: ChallengeType) => {
 
 export const getChallenge = async (type: ChallengeType): Promise<string> => {
     try {
-        if (!process.env.API_KEY) {
-            // In a real app, you might want to show a more user-friendly message.
-            return "API Key not found. Please configure your environment.";
-        }
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         
         const response = await ai.models.generateContent({
