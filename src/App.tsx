@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { GameState, ChallengeType, Page } from './types';
 import { getChallenge } from './services/geminiService';
 import Footer from './components/Footer';
@@ -179,6 +180,7 @@ const App: React.FC = () => {
 
     return (
         <div className="relative flex flex-col items-center justify-between min-h-screen bg-charcoal p-4 overflow-hidden">
+             <Analytics />
              <AnimatedBackground />
              {currentPage !== 'game' && <Logo />}
              {renderPage()}
