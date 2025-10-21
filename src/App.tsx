@@ -15,7 +15,6 @@ const App: React.FC = () => {
     const [challengeType, setChallengeType] = useState<ChallengeType | null>(null);
     const [challengeText, setChallengeText] = useState<string>('');
     const [userAnswer, setUserAnswer] = useState<string>('');
-    const [submitted, setSubmitted] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<Page>('game');
 
     useEffect(() => {
@@ -47,7 +46,6 @@ const App: React.FC = () => {
     const handleChoice = useCallback(async (type: ChallengeType) => {
         setGameState('loading');
         setChallengeType(type);
-        setSubmitted(false);
         setUserAnswer('');
         const text = await getChallenge(type);
         setChallengeText(text);
@@ -59,11 +57,10 @@ const App: React.FC = () => {
         setChallengeType(null);
         setChallengeText('');
         setUserAnswer('');
-        setSubmitted(false);
     };
     
     const handleSubmitToHall = () => {
-        setSubmitted(true);
+        setGameState('submitted');
     };
 
     const renderGameContent = () => {
@@ -119,37 +116,41 @@ const App: React.FC = () => {
                             “{challengeText}”
                         </blockquote>
                         
-                        {submitted ? (
-                             <div className="text-center text-gold animate-fade-in">
-                                <p className="mb-6">Your response echoes in the Hall of Chaos.</p>
+                        <div className="w-full animate-fade-in">
+                            {challengeType === 'truth' && (
+                                <textarea
+                                    value={userAnswer}
+                                    onChange={(e) => setUserAnswer(e.target.value)}
+                                    placeholder="Confess your truth..."
+                                    className="w-full max-w-xl mx-auto block bg-charcoal border-2 border-ivory/30 rounded-md p-4 mb-6 text-ivory focus:border-gold focus:ring-gold transition-colors"
+                                    rows={3}
+                                />
+                            )}
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <button
+                                    onClick={handleSubmitToHall}
+                                    className="px-8 py-3 text-lg font-semibold bg-gold text-charcoal rounded-md hover:opacity-90 transition-opacity duration-300"
+                                >
+                                    {challengeType === 'truth' ? 'Submit to the Hall' : 'I did it!'}
+                                </button>
                                 <button onClick={handlePlayAgain} className="px-8 py-3 text-lg font-semibold text-ivory border-2 border-ivory/50 rounded-md hover:bg-ivory hover:text-charcoal transition-all duration-300">
-                                    Play Again
+                                    Ask Another
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                );
+            case 'submitted':
+                return (
+                    <div className="w-full max-w-3xl text-center animate-fade-in-up">
+                        {challengeType === 'truth' ? (
+                            <p className="text-3xl md:text-5xl font-serif text-ivory mb-8 leading-tight">Your response echoes in the Hall of Chaos.</p>
                         ) : (
-                            <div className="w-full animate-fade-in">
-                                {challengeType === 'truth' && (
-                                    <textarea
-                                        value={userAnswer}
-                                        onChange={(e) => setUserAnswer(e.target.value)}
-                                        placeholder="Confess your truth..."
-                                        className="w-full max-w-xl mx-auto block bg-charcoal border-2 border-ivory/30 rounded-md p-4 mb-6 text-ivory focus:border-gold focus:ring-gold transition-colors"
-                                        rows={3}
-                                    />
-                                )}
-                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                    <button
-                                        onClick={handleSubmitToHall}
-                                        className="px-8 py-3 text-lg font-semibold bg-gold text-charcoal rounded-md hover:opacity-90 transition-opacity duration-300"
-                                    >
-                                        {challengeType === 'truth' ? 'Submit to the Hall' : 'I did it!'}
-                                    </button>
-                                    <button onClick={handlePlayAgain} className="px-8 py-3 text-lg font-semibold text-ivory border-2 border-ivory/50 rounded-md hover:bg-ivory hover:text-charcoal transition-all duration-300">
-                                        Ask Another
-                                    </button>
-                                </div>
-                            </div>
+                            <p className="text-3xl md:text-5xl font-serif text-ivory mb-8 leading-tight">Dare completed! The AI is impressed by your audacity.</p>
                         )}
+                        <button onClick={handlePlayAgain} className="px-8 py-3 text-lg font-semibold text-ivory border-2 border-ivory/50 rounded-md hover:bg-ivory hover:text-charcoal transition-all duration-300">
+                            Play Again
+                        </button>
                     </div>
                 );
         }

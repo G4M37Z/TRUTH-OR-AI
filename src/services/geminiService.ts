@@ -9,25 +9,40 @@ const getSystemInstruction = (type: ChallengeType) => {
     }
 }
 
+const MAX_RETRIES = 3;
+
 export const getChallenge = async (type: ChallengeType): Promise<string> => {
-    try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `Generate a single '${type}' prompt.`,
-            config: {
-                systemInstruction: getSystemInstruction(type),
-                temperature: 0.9,
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    for (let i = 0; i < MAX_RETRIES; i++) {
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: `Generate a single '${type}' prompt.`,
+                config: {
+                    systemInstruction: getSystemInstruction(type),
+                    temperature: 0.9,
+                }
+            });
+
+            const text = response.text.trim();
+            
+            if (text) {
+                // Remove potential quotation marks from the AI's response
+                return text.replace(/^"|"$/g, '');
             }
-        });
+            
+            console.warn(`Gemini API returned an empty response. Attempt ${i + 1} of ${MAX_RETRIES}.`);
 
-        const text = response.text.trim();
-        // Remove potential quotation marks from the AI's response
-        return text.replace(/^"|"$/g, '');
+        } catch (error) {
+            console.error(`Error fetching challenge from Gemini API on attempt ${i + 1}:`, error);
+        }
 
-    } catch (error) {
-        console.error("Error fetching challenge from Gemini API:", error);
-        return "The AI is pondering its next move... try again in a moment.";
+        if (i < MAX_RETRIES - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+        }
     }
+
+    console.error("All retries failed. Returning a fallback challenge.");
+    return "The AI is pondering its next move... try again in a moment.";
 };
