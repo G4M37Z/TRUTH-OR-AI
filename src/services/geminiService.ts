@@ -16,8 +16,8 @@ export const getChallenge = async (type: ChallengeType): Promise<string> => {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Generate a single '${type}' prompt.`,
-            systemInstruction: getSystemInstruction(type),
             config: {
+                systemInstruction: getSystemInstruction(type),
                 temperature: 0.9,
             }
         });
